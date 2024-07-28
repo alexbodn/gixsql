@@ -206,11 +206,11 @@ jobs:
             --volume "${PWD}/artifacts:/artifacts"
 
           # Pass some environment variables to the container
-          env: | # YAML, but pipe character is necessary
-            artifact_name: git-${{ matrix.distro }}_${{ matrix.arch }}
+#          env: | # YAML, but pipe character is necessary
+#            artifact_name: git-${{ matrix.distro }}_${{ matrix.arch }}
 
           # The shell to run commands with in the container
-          shell: /bin/sh
+#          shell: /bin/sh
 
           # Install some dependencies in the container. This speeds up builds if
           # you are also using githubToken. Any dependencies installed here will
@@ -218,30 +218,67 @@ jobs:
           # builds don't have to re-install them. The image layer is cached
           # publicly in your project's package repository, so it is vital that
           # no secrets are present in the container state or logs.
-          install: |
-            case "${{ matrix.distro }}" in
-              ubuntu*|jessie|stretch|buster|bullseye)
-                apt-get update -q -y
-                apt-get install -q -y git
-                ;;
-              fedora*)
-                dnf -y update
-                dnf -y install git which
-                ;;
-              alpine*)
-                apk update
-                apk add git
-                ;;
-            esac
+#          install: |
+#            case "${{ matrix.distro }}" in
+#              ubuntu*|jessie|stretch|buster|bullseye)
+#                apt-get update -q -y
+#                apt-get install -q -y git
+#                ;;
+#              fedora*)
+#                dnf -y update
+#                dnf -y install git which
+#                ;;
+#              alpine*)
+#                apk update
+#                apk add git
+#                ;;
+#            esac
 
           # Produce a binary artifact and place it in the mounted volume
-          run: |
-            cp $(which git) "/artifacts/${artifact_name}"
-            echo "Produced artifact at /artifacts/${artifact_name}"
+#          run: |
+#            cp $(which git) "/artifacts/${artifact_name}"
+#            echo "Produced artifact at /artifacts/${artifact_name}"
 
-      - name: Show the artifact
+#      - name: Show the artifact
         # Items placed in /artifacts in the container will be in
         # ${PWD}/artifacts on the host.
-        run: |
-          ls -al "${PWD}/artifacts"
+#        run: |
+#          ls -al "${PWD}/artifacts"
 
+       - name: Build
+         env:
+           DIST: ${{ matrix.distro }}-${{ matrix.arch }}
+
+         run: |
+           export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+           export WORKSPACE=$(pwd)
+           apt update
+           apt install -y build-essential bison automake autoconf pkg-config libmariadb-dev-compat libmariadb-dev libpq-dev unixodbc-dev flex libspdlog-dev libfmt-dev git wget libtool
+           git clone --recurse-submodules https://github.com/alexbodn/gixsql.git --branch ${{ env.GIXSQL_BRANCH }} .
+           echo "HOST_PLATFORM      : ${{env.HOST_PLATFORM}}"
+           echo "BUILD_CONFIGURATION: ${{env.BUILD_CONFIGURATION}}"
+           chmod 755 ./prepbuild.sh && ./prepbuild.sh /E
+           chmod 755 ./prepdist.sh && ./prepdist.sh
+           autoreconf --install --force
+           ./configure --prefix=$WORKSPACE/pkg/${{ env.INSTALL_PREFIX }}
+           make -j$(nproc) && make install-strip
+           chmod 755 $WORKSPACE/deploy/installers/linux/mkdeb-gixsql.sh && $WORKSPACE/deploy/installers/linux/mkdeb-gixsql.sh
+    
+#       - name: Build package
+#         env:
+#             DIST: debian-12
+#             WORKSPACE: ${{ github.workspace }}
+#         shell: bash
+#         run: |
+#           chmod 755 $WORKSPACE/deploy/installers/linux/mkdeb-gixsql.sh && $WORKSPACE/deploy/installers/linux/mkdeb-gixsql.sh
+#           ls -l
+#           ls -lR $WORKSPACE/pkg
+        
+       - name: Archive production artifacts
+         env:
+             DIST: debian-12
+         uses: actions/upload-artifact@v3
+         with:
+           name: gixsql-${{ env.DIST }}-${{ env.HOST_PLATFORM }}-${{ env.GIXSQLMAJ}}.${{ env.GIXSQLMIN}}.${{ env.GIXSQLREL}}-${{ env.GIX_REVISION}}
+           path: |
+             gixsql-${{ env.DIST }}-${{ env.HOST_PLATFORM }}-${{ env.GIXSQLMAJ}}.${{ env.GIXSQLMIN}}.${{ env.GIXSQLREL}}-${{ env.GIX_REVISION}}.deb
