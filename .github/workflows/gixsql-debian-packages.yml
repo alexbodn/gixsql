@@ -167,6 +167,7 @@ jobs:
 #######on: [push, pull_request]
 #######
 #######jobs:
+
   build_job:
     # The host should always be linux
     runs-on: ubuntu-22.04
@@ -178,14 +179,9 @@ jobs:
         include:
           - arch: aarch64
             distro: bookworm
-#######          - arch: aarch64
-#######            distro: bullseye 
-#######          - arch: ppc64le
-#######            distro: alpine_latest
-#######          - arch: none
-#######            distro: none
-#######            base_image: riscv64/busybox
-    
+          - arch: aarch64
+            distro: bullseye
+
     steps:
       - uses: actions/checkout@v4
       - uses: uraimo/run-on-arch-action@v2
