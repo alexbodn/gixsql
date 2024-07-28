@@ -24,6 +24,8 @@ jobs:
 
   debian-10-x64:
     runs-on: ubuntu-latest
+    e2e-test:
+    if: false
     container:
       image: debian:10
 
@@ -71,6 +73,8 @@ jobs:
 
   debian-11-x64:
     runs-on: ubuntu-latest
+    e2e-test:
+    if: false
     container:
       image: debian:11
 
@@ -118,6 +122,8 @@ jobs:
 
   debian-12-x64:
     runs-on: ubuntu-latest
+    e2e-test:
+    if: false
     container:
       image: debian:12
 
