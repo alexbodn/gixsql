@@ -266,11 +266,12 @@ jobs:
 #           ls -l
 #           ls -lR $WORKSPACE/pkg
         
-       - name: Archive production artifacts
-         env:
+      - name: Archive production artifacts
+        env:
            DIST: debian-12
-         uses: actions/upload-artifact@v3
-         with:
-           name: gixsql-${{ env.DIST }}-${{ env.HOST_PLATFORM }}-${{ env.GIXSQLMAJ}}.${{ env.GIXSQLMIN}}.${{ env.GIXSQLREL}}-${{ env.GIX_REVISION}}
-           path: |
-             gixsql-${{ env.DIST }}-${{ env.HOST_PLATFORM }}-${{ env.GIXSQLMAJ}}.${{ env.GIXSQLMIN}}.${{ env.GIXSQLREL}}-${{ env.GIX_REVISION}}.deb
+        uses: actions/upload-artifact@v3
+        with:
+          name: gixsql-${{ env.DIST }}-${{ env.HOST_PLATFORM }}-${{ env.GIXSQLMAJ}}.${{ env.GIXSQLMIN}}.${{ env.GIXSQLREL}}-${{ env.GIX_REVISION}}
+          path: |
+            gixsql-${{ env.DIST }}-${{ env.HOST_PLATFORM }}-${{ env.GIXSQLMAJ}}.${{ env.GIXSQLMIN}}.${{ env.GIXSQLREL}}-${{ env.GIX_REVISION}}.deb
+            
